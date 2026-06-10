@@ -5,6 +5,7 @@ import UserForm from '../components/UserForm';
 import RecommendationCard from '../components/RecommendationCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getRecommendation } from '../services/recommendationEngine';
+import { getAiRecommendation } from '../services/geminiService';
 import { createSubmission } from '../services/supabase';
 import { RecommendationResult, Submission } from '../types';
 
@@ -16,22 +17,35 @@ export default function Home() {
     email: string;
   } | null>(null);
 
-  const handleFormSubmit = async (formData: Omit<Submission, 'id' | 'recommendation' | 'reason' | 'created_at'>) => {
+  const handleFormSubmit = async (
+    formData: Omit<Submission, 'id' | 'recommendation' | 'reason' | 'created_at'> & { engineMode: 'rules' | 'ai' }
+  ) => {
     setIsSubmitting(true);
     setErrorMsg(null);
 
     try {
-      // 1. Calculate Recommendation locally
-      const calculatedRec = getRecommendation({
-        qualification: formData.qualification,
-        experience: formData.experience,
-        career_goal: formData.career_goal,
-        profession: formData.profession,
-        full_name: formData.full_name,
-      });
+      // 1. Calculate Recommendation (AI or Rule-Based)
+      let calculatedRec: RecommendationResult;
 
-      // Artificial short delay for high-quality professional loading experience
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      if (formData.engineMode === 'ai') {
+        calculatedRec = await getAiRecommendation({
+          qualification: formData.qualification,
+          experience: formData.experience,
+          career_goal: formData.career_goal,
+          profession: formData.profession,
+          full_name: formData.full_name,
+        });
+      } else {
+        calculatedRec = getRecommendation({
+          qualification: formData.qualification,
+          experience: formData.experience,
+          career_goal: formData.career_goal,
+          profession: formData.profession,
+          full_name: formData.full_name,
+        });
+        // Artificial short delay for high-quality professional loading experience
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      }
 
       // 2. Persist to Firestore DB / Supabase DB / local storage
       await createSubmission({
@@ -52,7 +66,7 @@ export default function Home() {
       });
     } catch (err: any) {
       console.error('Submission failed', err);
-      setErrorMsg('There was a database persistence issue. Please check your credentials and try again.');
+      setErrorMsg(err.message || 'There was an issue processing your submission. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

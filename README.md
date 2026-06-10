@@ -50,17 +50,23 @@ npm install
 ```
 
 ### 3. Environment Configuration
-The application supports a **zero-config local storage mode** by default. If no Supabase environment variables are provided, it automatically falls back to storing submissions in `localStorage` so you can test it immediately.
+The application supports a **zero-config mode** by default. If no environment variables are provided:
+- It falls back to storing submissions in `localStorage` instead of Supabase.
+- It disables the Gemini AI option gracefully or prompts for a key when chosen, utilizing the rule-weighted scoring matrix.
 
-To connect to a live database:
+To connect to a live database and enable the Gemini AI Engine option:
 1. Copy the example environment file to create your local `.env` file:
    ```bash
    cp .env.example .env
    ```
-2. Open the `.env` file and replace the placeholder values with your actual Supabase credentials:
+2. Open the `.env` file and replace the placeholder values with your actual credentials:
    ```env
+   # Supabase Configuration
    VITE_SUPABASE_URL="https://your-project-id.supabase.co"
    VITE_SUPABASE_ANON_KEY="your-anon-key"
+
+   # Gemini API Configuration
+   VITE_GEMINI_API_KEY="your-gemini-api-key"
    ```
 
 #### 🗄️ Supabase Table Schema Setup

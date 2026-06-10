@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, GraduationCap, Briefcase, KeyRound, Target, ArrowRight } from 'lucide-react';
+import { User, Mail, GraduationCap, Briefcase, KeyRound, Target, ArrowRight, Sliders, Sparkles } from 'lucide-react';
 import { Submission } from '../types';
 
 interface UserFormProps {
-  onSubmit: (formData: Omit<Submission, 'id' | 'recommendation' | 'reason' | 'created_at'>) => void;
+  onSubmit: (formData: Omit<Submission, 'id' | 'recommendation' | 'reason' | 'created_at'> & { engineMode: 'rules' | 'ai' }) => void;
   isSubmitting: boolean;
 }
 
 export default function UserForm({ onSubmit, isSubmitting }: UserFormProps) {
+  const [engineMode, setEngineMode] = useState<'rules' | 'ai'>('rules');
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -72,6 +73,7 @@ export default function UserForm({ onSubmit, isSubmitting }: UserFormProps) {
         experience: Number(formData.experience),
         profession: formData.profession.trim(),
         career_goal: formData.career_goal.trim(),
+        engineMode,
       });
     }
   };
@@ -246,6 +248,59 @@ export default function UserForm({ onSubmit, isSubmitting }: UserFormProps) {
           />
           {errors.career_goal && <p className="text-xs font-semibold text-red-500">{errors.career_goal}</p>}
         </div>
+
+        {/* Assessment Engine Toggle */}
+        <div className="flex flex-col gap-2.5 sm:col-span-2 mt-2">
+          <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+            <Sparkles className="h-4 w-4 text-blue-500" />
+            Assessment Engine Mode
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Rule-Based Engine option */}
+            <button
+              type="button"
+              onClick={() => setEngineMode('rules')}
+              disabled={isSubmitting}
+              className={`flex items-start gap-3.5 p-4 rounded-xl border text-left transition-all ${
+                isSubmitting ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+              } ${
+                engineMode === 'rules'
+                  ? 'border-blue-600 bg-blue-50/20 ring-2 ring-blue-100'
+                  : 'border-slate-200 hover:border-slate-300 bg-slate-50/30'
+              }`}
+            >
+              <div className={`mt-0.5 rounded-lg p-1.5 ${engineMode === 'rules' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
+                <Sliders className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800">Rule-Based Matrix</p>
+                <p className="text-xs font-semibold text-slate-400 mt-0.5">Instant, scoring-based local assessment.</p>
+              </div>
+            </button>
+
+            {/* Gemini AI Engine option */}
+            <button
+              type="button"
+              onClick={() => setEngineMode('ai')}
+              disabled={isSubmitting}
+              className={`flex items-start gap-3.5 p-4 rounded-xl border text-left transition-all ${
+                isSubmitting ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+              } ${
+                engineMode === 'ai'
+                  ? 'border-blue-600 bg-blue-50/20 ring-2 ring-blue-100'
+                  : 'border-slate-200 hover:border-slate-300 bg-slate-50/30'
+              }`}
+            >
+              <div className={`mt-0.5 rounded-lg p-1.5 ${engineMode === 'ai' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800">Gemini 2.5 Flash AI</p>
+                <p className="text-xs font-semibold text-slate-400 mt-0.5">Cognitive AI recommendations tailored to your goals.</p>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="pt-2">
@@ -255,7 +310,10 @@ export default function UserForm({ onSubmit, isSubmitting }: UserFormProps) {
           disabled={isSubmitting}
           className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-blue-600 px-6 py-4.5 text-base font-bold text-white shadow-lg shadow-blue-500/10 transition-all duration-200 hover:bg-blue-700 active:scale-[0.99] disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer"
         >
-          {isSubmitting ? 'Calculating Pathways...' : 'Generate Recommendation'}
+          {isSubmitting 
+            ? (engineMode === 'ai' ? 'Querying Gemini AI...' : 'Calculating Pathways...') 
+            : (engineMode === 'ai' ? 'Generate AI Recommendation' : 'Generate Recommendation')
+          }
           <ArrowRight className="h-5 w-5" />
         </button>
       </div>
