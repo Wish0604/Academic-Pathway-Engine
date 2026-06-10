@@ -1,0 +1,6 @@
+{
+  "name": "Academic Pathway Engine",
+  "description": "A scoring-based education recommender that analyzes current qualifications, experience, and goals to match students with the most suitable academic path.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
