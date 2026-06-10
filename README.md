@@ -103,6 +103,43 @@ npm run preview
 
 ---
 
+## 🔄 Project Workflow
+
+```mermaid
+flowchart TD
+    %% Styling definitions
+    classDef primary fill:#3b82f6,stroke:#1d4ed8,color:#fff,stroke-width:2px;
+    classDef secondary fill:#f8fafc,stroke:#cbd5e1,color:#334155,stroke-width:1px;
+    classDef decision fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a,stroke-width:2px;
+    classDef success fill:#f0fdf4,stroke:#16a34a,color:#14532d,stroke-width:2px;
+
+    Start([User opens App]) --> FillForm[Fill Form: Name, Email, Experience, Career Goal]:::secondary
+    FillForm --> Validate{Validate Input}:::decision
+    
+    Validate -->|Invalid| ShowErr[Display Form Validation Errors]:::secondary
+    ShowErr --> FillForm
+    
+    Validate -->|Valid| ChooseMode{Choose Assessment Mode}:::decision
+    
+    ChooseMode -->|Rule-Based Engine| RunRules[Calculate score weights locally]:::secondary
+    ChooseMode -->|Gemini AI Engine| QueryGemini[Invoke gemini-2.5-flash API with JSON schema]:::secondary
+    
+    RunRules --> GenResult[Construct Recommendation Result]:::secondary
+    QueryGemini --> GenResult
+    
+    GenResult --> DbCheck{Supabase Configured?}:::decision
+    
+    DbCheck -->|Yes| WriteSupabase[Insert submission into Supabase]:::success
+    DbCheck -->|No| WriteLocal[Store fallback record in LocalStorage]:::secondary
+    
+    WriteSupabase --> DisplayCard[Render Premium Recommendation Card]:::primary
+    WriteLocal --> DisplayCard
+    
+    DisplayCard --> End([Explore Degrees & Next Steps])
+```
+
+---
+
 ## 📐 Rule-Based scoring Algorithm
 Rather than a basic heuristic string matches sequence, the `recommendationEngine.ts` computes weights through a robust **Scoring Matrix**:
 1. **Goal Analysis Weights:** Maps expressions targeting "research", "teaching", "r&d" to PhD (+6); and "leadership", "management", "c-suite" to DBA (+5).
